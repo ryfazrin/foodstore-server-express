@@ -76,7 +76,80 @@ async function store(req, res, next) {
   }
 }
 
+async function update(req, res, next) {
+  try {
+    let payload = req.body;
+
+    // handle if file exist on request
+    if (req.file) {
+      let tmp_path = req.file.path;
+      let originalExt = req.file.originalname.split('.')[req.file.originalname.split('.').length - 1];
+
+      let filename = req.file.filename + '.' + originalExt;
+      let target_path = path.resolve(config.rootPath, `public/upload/${filename}`);
+
+      const src = fs.createReadStream(tmp_path);
+      const dest = fs.createWriteStream(target_path);
+
+      src.pipe(dest);
+
+      src.on('end', async () => {
+        try {
+          let product = await Product.findOne({ _id: req.params.id });
+
+          let currentImage = `${config.rootPath}/public/upload/${product.image_url}`;
+          if (fs.existsSync(currentImage)) {
+            fs.unlinkSync(currentImage);
+          }
+
+          product = await Product.findOneAndUpdate({ _id: req.params.id }, {
+            ...payload,
+            image_url: filename
+          }, { new: true, runValidators: true });
+
+          return res.json(product);
+        } catch (err) {
+          fs.unlinkSync(target_path); // jika error, hapus file yang sudah terupload pada direktori
+
+          if (err && err.name === 'ValidationError') {
+            return res.json({
+              error: 1,
+              message: err.message,
+              fields: err.errors
+            })
+          }
+
+          next(err);
+        }
+      });
+
+      src.on('error', async () => {
+        next(err);
+      });
+    } else {
+      let product = await Product
+        .findOneAndUpdate({ _id: req.params.id }, payload, {
+          new: true,
+          runValidators: true
+        });
+
+      return res.json(product);
+    }
+  } catch (err) {
+    if (err && err.name === 'ValidationError') {
+      return res.json({
+        error: 1,
+        message: err.message,
+        fields: err.errors
+      })
+    }
+
+    next(err);
+  }
+}
+
 module.exports = {
   index,
-  store
+  store,
+  update
 }
