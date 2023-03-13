@@ -21,3 +21,5 @@ const productSchema = Schema({
   },
   image_url: String,
 }, { timestamps: true });
+
+module.exports = model('Product', productSchema);
