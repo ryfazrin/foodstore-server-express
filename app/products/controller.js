@@ -6,7 +6,10 @@ const Product = require('./model');
 // List Products
 async function index(req, res, next) {
   try {
-    let products = await Product.find();
+    let { limit = 10, skip = 0 } = req.query; // BASE_URL/api/products?limit=10&skip=0
+
+    let products = await Product.find().limit(parseInt(limit)).skip(parseInt(skip));
+
     return res.json(products);
   } catch (err) {
     next(err);
