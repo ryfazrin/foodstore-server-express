@@ -7,6 +7,7 @@ async function store(req, res, next) {
   try {
     let payload = req.body;
 
+    // handle if file exist on request
     if (req.file) {
       let tmp_path = rrq.file.path;
       let originalExt = req.file.originalname.split('')[req.file.originalname.split('.').length - 1];
@@ -18,6 +19,31 @@ async function store(req, res, next) {
       const dest = fs.createWriteStream(target_path);
 
       src.pipe(dest);
+
+      src.on('end', async () => {
+        try {
+          let product = new Product({ ...payload, imaget_url: filename });
+          await product.save();
+
+          return res.json(product);
+        } catch (err) {
+          fs.unlinkSync(target_path); // jika error, hapus file yang sudah terupload pada direktori
+
+          if (err && err.name === 'ValidationError') {
+            return res.json({
+              error: 1,
+              message: err.message,
+              fields: err.errors
+            })
+          }
+
+          next(err);
+        }
+      });
+
+      src.on('error', async () => {
+        next(err);
+      });
     } else {
       let product = new Product(payload);
       await product.save();
