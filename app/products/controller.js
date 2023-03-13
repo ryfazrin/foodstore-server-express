@@ -9,8 +9,8 @@ async function store(req, res, next) {
 
     // handle if file exist on request
     if (req.file) {
-      let tmp_path = rrq.file.path;
-      let originalExt = req.file.originalname.split('')[req.file.originalname.split('.').length - 1];
+      let tmp_path = req.file.path;
+      let originalExt = req.file.originalname.split('.')[req.file.originalname.split('.').length - 1];
 
       let filename = req.file.filename + '.' + originalExt;
       let target_path = path.resolve(config.rootPath, `public/upload/${filename}`);
@@ -22,7 +22,7 @@ async function store(req, res, next) {
 
       src.on('end', async () => {
         try {
-          let product = new Product({ ...payload, imaget_url: filename });
+          let product = new Product({ ...payload, image_url: filename });
           await product.save();
 
           return res.json(product);
