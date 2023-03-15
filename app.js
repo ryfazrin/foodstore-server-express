@@ -7,6 +7,7 @@ var logger = require('morgan');
 // (1) import router
 const productRouter = require('./app/products/router');
 const categoryRouter = require('./app/categories/router');
+const tagRouter = require('./app/tags/router');
 
 var app = express();
 
@@ -20,9 +21,10 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// (2) gunakan product router
+// (2) use router to prefix /api
 app.use('/api', productRouter);
 app.use('/api', categoryRouter);
+app.use('/api', tagRouter);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
