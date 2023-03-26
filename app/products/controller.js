@@ -8,7 +8,12 @@ const Tag = require('../tags/model');
 // List Products
 async function index(req, res, next) {
   try {
-    let { limit = 10, skip = 0, q = '', category = '' } = req.query; // BASE_URL/api/products?limit=10&skip=0&q=
+    // Filter BASE_URL/api/products
+    // ?limit=10&skip=0 OR
+    // ?q=
+    // ?category=minuman
+    // ?&tags[]=panas&tags[]=manis
+    let { limit = 10, skip = 0, q = '', category = '', tags = [] } = req.query;
 
     let criteria = {};
 
@@ -24,10 +29,15 @@ async function index(req, res, next) {
         name: { $regex: `${category}` },
         $options: 'i'
       });
-      
+
       if (category) {
         criteria = { ...criteria, category: category._id }
       }
+    }
+
+    if (tags.length) {
+      tags = await Tag.find({ name: { $in: tags } });
+      criteria = { ...criteria, tags: { $in: tags.map(tag => tag._id) } }
     }
 
     let products =
