@@ -8,14 +8,24 @@ const Tag = require('../tags/model');
 // List Products
 async function index(req, res, next) {
   try {
-    let { limit = 10, skip = 0 } = req.query; // BASE_URL/api/products?limit=10&skip=0
+    let { limit = 10, skip = 0, q = '' } = req.query; // BASE_URL/api/products?limit=10&skip=0&q=
+
+    let criteria = {};
+
+    if (p.length) {
+      criteria = {
+        ...criteria, 
+        name: { $regex: `${q}`, $options: 'i' }
+      }
+    }
 
     let products = 
-      await Product.find()
+      await Product
+        .find(criteria)
         .limit(parseInt(limit))
         .skip(parseInt(skip))
         .populate('category')
-        .populate('tags')
+        .populate('tags');
 
     return res.json(products);
   } catch (err) {
