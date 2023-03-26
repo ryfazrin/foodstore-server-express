@@ -1,6 +1,7 @@
 const passport = require('passport');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
+const config = require('../config');
 const User = require('../user/model');
 
 async function register(req, res, next) {
@@ -47,7 +48,32 @@ async function localStrategy(email, password, done) {
   done();
 }
 
+async function login (req, res, next) {
+  passport.authenticate('local', async function (err, user) {
+    if (err) return next(err);
+    if (!user) return res.json({
+      error: 1, message: 'email or password incorrect'
+    })
+    // (1) buat JSON Web Token
+    let signed = jwt.sign(user, config.secretKey); // <--- ganti secret key
+    // (2) simpan token tersebut ke user terkait
+    await User.findOneAndUpdate({ _id: user._id }, {
+      $push: {
+        token:
+          signed
+      }
+    }, { new: true });
+    // (3) response ke _client_
+    return res.json({
+      message: 'logged in successfully',
+      user: user,
+      token: signed
+    });
+  })(req, res, next);
+}
+
 module.exports = {
   register,
-  localStrategy
+  localStrategy,
+  login
 }
