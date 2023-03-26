@@ -5,6 +5,7 @@ var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 
 // (1) import router
+const authRouter = require('./app/auth/router');
 const productRouter = require('./app/products/router');
 const categoryRouter = require('./app/categories/router');
 const tagRouter = require('./app/tags/router');
@@ -20,6 +21,9 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
+
+// prefix /auth
+app.use('/auth', authRouter);
 
 // (2) use router to prefix /api
 app.use('/api', productRouter);
