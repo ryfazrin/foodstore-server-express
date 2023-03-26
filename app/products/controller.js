@@ -2,6 +2,7 @@ const fs = require('fs');
 const path = require('path');
 const config = require('../config');
 const Product = require('./model');
+const Category = require('../categories/model');
 
 // List Products
 async function index(req, res, next) {
@@ -19,6 +20,19 @@ async function index(req, res, next) {
 async function store(req, res, next) {
   try {
     let payload = req.body;
+    
+    // handle add category in product
+    if (payload.category) {
+      let category =
+        await Category
+          .findOne({ name: { $regex: payload.category, $options: 'i' } });
+
+      if (category) {
+        payload = { ...payload, category: category._id };
+      } else {
+        delete payload.category;
+      }
+    }
 
     // handle if file exist on request
     if (req.file) {
@@ -79,6 +93,17 @@ async function store(req, res, next) {
 async function update(req, res, next) {
   try {
     let payload = req.body;
+
+    if (payload.category) {
+      let category = 
+        await Category.findOne({ name: {$regex: payload.category, $options: 'i'} })
+
+      if (category) {
+        payload = { ...payload, category: category._id }
+      } else {
+        delete payload.category;
+      }
+    }
 
     // handle if file exist on request
     if (req.file) {
@@ -158,8 +183,8 @@ async function destroy(req, res, next) {
     }
 
     return res.json(product);
-  } catch(err) {
-  next(err);
+  } catch (err) {
+    next(err);
   }
 }
 
