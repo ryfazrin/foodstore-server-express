@@ -28,3 +28,11 @@ DB_PASS=[PASSWORD]
 # SESUAIKAN dengan nama database yang sudah kamu buat
 DB_NAME=[DATABASE]
 ```
+## History
+Finish: Membuat endpoint Login
+
+Belum di uji:
+- endpoint product yang mempunyai relasi
+- endpoint register dan login
+
+Next: 232 of 602 - Membuat Middleware untuk Menerjemahkan Auth Headers Menjadi User 
